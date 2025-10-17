@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Matching Simulator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .input-section {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            margin-bottom: 20px;
+        }
+
+        .input-section.taker-section,
+        .input-section.maker-section {
+            max-width: 320px;
+        }
+
+        .input-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 16px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .order-form {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding: 12px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .form-group label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            min-width: 100px;
+        }
+
+        .form-group input,
+        .form-group select {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            font-size: 12px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .form-group input[type="number"] {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .calculated-field {
+            background: #fef3c7;
+            border-color: #fbbf24;
+            font-weight: 600;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .maker-orders-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .maker-order-item {
+            background: #f9fafb;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #10b981;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+        }
+
+        .maker-order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .maker-order-number {
+            font-size: 12px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+        .maker-order-field {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .maker-order-field-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            min-width: 100px;
+        }
+
+        .maker-order-field-value {
+            flex: 1;
+            font-size: 11px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+
+        .input-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .results-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            flex: 1;
+        }
+
+        .order-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 100%;
+        }
+
+        .match-analysis {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            width: 100%;
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            color: white;
+        }
+
+        .step-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-buy {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .badge-sell {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-yes {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-no {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔄 Order Matching Simulator</h1>
+            <p>Input orders and visualize the matching process with calculations</p>
+        </div>
+
+        <div class="input-container">
+            <div class="input-column">
+                <!-- Preset Scenarios -->
+                <div class="input-section" style="max-width: 320px;">
+                    <div class="input-header">⚡ Quick Scenarios</div>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn btn-secondary" onclick="loadComplementaryCase()" style="font-size: 12px; padding: 8px 16px;">
+                            📋 COMPLEMENTARY Case
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadMintCase()" style="font-size: 12px; padding: 8px 16px;">
+                            🔨 MINT Case
+                        </button>
+                        <button class="btn btn-secondary" onclick="loadMergeCase()" style="font-size: 12px; padding: 8px 16px;">
+                            🔗 MERGE Case
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Taker Order Input -->
+                <div class="input-section taker-section">
+                    <div class="input-header">📥 Taker Order</div>
+                    <form class="order-form" id="takerForm">
+                        <div class="form-group">
+                            <label>Side</label>
+                            <select id="takerSide">
+                                <option value="BUY">BUY</option>
+                                <option value="SELL">SELL</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Token</label>
+                            <select id="takerToken">
+                                <option value="YES">YES</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Maker Amount</label>
+                            <input type="number" id="takerMakerAmount" value="25000" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Taker Amount</label>
+                            <input type="number" id="takerTakerAmount" value="50000" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Remaining Maker</label>
+                            <input type="number" id="takerRemainingMaker" value="25000" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Remaining Taker</label>
+                            <input type="number" id="takerRemainingTaker" value="50000" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Price (calc)</label>
+                            <input type="text" id="takerPrice" class="calculated-field" readonly>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Maker Orders Input -->
+                <div class="input-section maker-section">
+                    <div class="input-header">📤 Maker Orders</div>
+                    <form class="order-form" id="makerForm">
+                        <div class="form-group">
+                            <label>Side</label>
+                            <select id="makerSide">
+                                <option value="BUY">BUY</option>
+                                <option value="SELL">SELL</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Token</label>
+                            <select id="makerToken">
+                                <option value="YES">YES</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Maker Amount</label>
+                            <input type="number" id="makerMakerAmount" value="15000" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Taker Amount</label>
+                            <input type="number" id="makerTakerAmount" value="7500" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Remaining Maker</label>
+                            <input type="number" id="makerRemainingMaker" value="15000" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Remaining Taker</label>
+                            <input type="number" id="makerRemainingTaker" value="7500" step="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Price (calc)</label>
+                            <input type="text" id="makerPrice" class="calculated-field" readonly>
+                        </div>
+                    </form>
+                    <div class="button-group">
+                        <button class="btn btn-secondary" onclick="addMakerOrder()">+ Add Maker</button>
+                        <button class="btn btn-primary" onclick="runMatching()">▶ Run Match</button>
+                    </div>
+
+                    <div id="makerOrdersList" class="maker-orders-list" style="margin-top: 20px;">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Column (Right Side) -->
+            <div class="results-column">
+                <!-- Match Overview -->
+                <div class="order-summary" id="orderSummary" style="display: none;">
+                    <div class="step-header">
+                        <div class="step-number" style="background: #3b82f6;">📋</div>
+                        <div class="step-title">Match Overview</div>
+                    </div>
+                    <div id="summaryContent"></div>
+                </div>
+
+                <!-- Match Flow Diagram -->
+                <div class="match-analysis" id="matchFlow" style="display: none;">
+                    <div class="step-header">
+                        <div class="step-number" style="background: #8b5cf6;">🔀</div>
+                        <div class="step-title">Match Flow</div>
+                    </div>
+                    <div id="matchFlowContent"></div>
+                </div>
+
+                <!-- Match Analysis -->
+                <div class="match-analysis" id="matchAnalysis" style="display: none;">
+                    <div class="step-header">
+                        <div class="step-number" style="background: #10b981;">🔍</div>
+                        <div class="step-title">Match Analysis</div>
+                    </div>
+                    <div id="matchAnalysisContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let makerOrders = [];
+
+        function calculatePrice(side, makerAmount, takerAmount) {
+            if (!makerAmount || !takerAmount || makerAmount === 0 || takerAmount === 0) {
+                return '';
+            }
+            const maker = parseFloat(makerAmount);
+            const taker = parseFloat(takerAmount);
+            if (side === 'BUY') {
+                return (maker / taker).toFixed(2);
+            } else {
+                return (taker / maker).toFixed(2);
+            }
+        }
+
+        function updateTakerPrice() {
+            const side = document.getElementById('takerSide').value;
+            const makerAmount = document.getElementById('takerMakerAmount').value;
+            const takerAmount = document.getElementById('takerTakerAmount').value;
+            const price = calculatePrice(side, makerAmount, takerAmount);
+            document.getElementById('takerPrice').value = price ? `${price}` : '';
+        }
+
+        function updateMakerPrice() {
+            const side = document.getElementById('makerSide').value;
+            const makerAmount = document.getElementById('makerMakerAmount').value;
+            const takerAmount = document.getElementById('makerTakerAmount').value;
+            const price = calculatePrice(side, makerAmount, takerAmount);
+            document.getElementById('makerPrice').value = price ? `${price}` : '';
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            ['takerSide', 'takerMakerAmount', 'takerTakerAmount'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateTakerPrice);
+                document.getElementById(id).addEventListener('change', updateTakerPrice);
+            });
+            ['makerSide', 'makerMakerAmount', 'makerTakerAmount'].forEach(id => {
+                document.getElementById(id).addEventListener('input', updateMakerPrice);
+                document.getElementById(id).addEventListener('change', updateMakerPrice);
+            });
+            updateTakerPrice();
+            updateMakerPrice();
+        });
+
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        }
+
+        // Load COMPLEMENTARY case: BUY YES vs SELL YES
+        function loadComplementaryCase() {
+            // Taker: BUY YES, 25000 maker, 50000 taker
+            document.getElementById('takerSide').value = 'BUY';
+            document.getElementById('takerToken').value = 'YES';
+            document.getElementById('takerMakerAmount').value = 25000;
+            document.getElementById('takerTakerAmount').value = 50000;
+            document.getElementById('takerRemainingMaker').value = 25000;
+            document.getElementById('takerRemainingTaker').value = 50000;
+            updateTakerPrice();
+
+            // Maker: SELL YES, 15000 maker, 7500 taker
+            makerOrders = [{
+                side: 'SELL',
+                token: 'YES',
+                makerAmount: 15000,
+                takerAmount: 7500,
+                remainingMaker: 15000,
+                remainingTaker: 7500,
+                price: calculatePrice('SELL', 15000, 7500)
+            }];
+            renderMakerOrders();
+            runMatching();
+        }
+
+        // Load MINT case: BUY YES + BUY YES
+        function loadMintCase() {
+            // Taker: BUY YES, 8000 maker, 20000 taker
+            document.getElementById('takerSide').value = 'BUY';
+            document.getElementById('takerToken').value = 'YES';
+            document.getElementById('takerMakerAmount').value = 8000;
+            document.getElementById('takerTakerAmount').value = 20000;
+            document.getElementById('takerRemainingMaker').value = 8000;
+            document.getElementById('takerRemainingTaker').value = 20000;
+            updateTakerPrice();
+
+            // Maker: BUY YES, 12000 maker, 20000 taker
+            makerOrders = [{
+                side: 'BUY',
+                token: 'YES',
+                makerAmount: 12000,
+                takerAmount: 20000,
+                remainingMaker: 12000,
+                remainingTaker: 20000,
+                price: calculatePrice('BUY', 12000, 20000)
+            }];
+            renderMakerOrders();
+            runMatching();
+        }
+
+        // Load MERGE case: SELL YES + SELL YES
+        function loadMergeCase() {
+            // Taker: SELL YES, 20000 maker, 12000 taker
+            document.getElementById('takerSide').value = 'SELL';
+            document.getElementById('takerToken').value = 'YES';
+            document.getElementById('takerMakerAmount').value = 20000;
+            document.getElementById('takerTakerAmount').value = 12000;
+            document.getElementById('takerRemainingMaker').value = 20000;
+            document.getElementById('takerRemainingTaker').value = 12000;
+            updateTakerPrice();
+
+            // Maker: SELL YES, 20000 maker, 8000 taker
+            makerOrders = [{
+                side: 'SELL',
+                token: 'YES',
+                makerAmount: 20000,
+                takerAmount: 8000,
+                remainingMaker: 20000,
+                remainingTaker: 8000,
+                price: calculatePrice('SELL', 20000, 8000)
+            }];
+            renderMakerOrders();
+            runMatching();
+        }
+
+        function addMakerOrder() {
+            const order = {
+                side: document.getElementById('makerSide').value,
+                token: document.getElementById('makerToken').value,
+                makerAmount: parseInt(document.getElementById('makerMakerAmount').value),
+                takerAmount: parseInt(document.getElementById('makerTakerAmount').value),
+                remainingMaker: parseInt(document.getElementById('makerRemainingMaker').value),
+                remainingTaker: parseInt(document.getElementById('makerRemainingTaker').value),
+                price: document.getElementById('makerPrice').value
+            };
+            makerOrders.push(order);
+            renderMakerOrders();
+        }
+
+        function removeMakerOrder(index) {
+            makerOrders.splice(index, 1);
+            renderMakerOrders();
+        }
+
+        function renderMakerOrders() {
+            const list = document.getElementById('makerOrdersList');
+            if (makerOrders.length === 0) {
+                list.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 20px;">No maker orders added yet.</p>';
+                return;
+            }
+            list.innerHTML = makerOrders.map((order, index) => `
+                <div class="maker-order-item">
+                    <div class="maker-order-header">
+                        <div class="maker-order-number">Maker Order #${index + 1}</div>
+                        <button class="btn btn-danger" style="padding: 4px 8px; font-size: 11px;" onclick="removeMakerOrder(${index})">✕</button>
+                    </div>
+                    <div class="maker-order-field">
+                        <div class="maker-order-field-label">Side</div>
+                        <div class="maker-order-field-value">
+                            <span class="badge badge-${order.side.toLowerCase()}">${order.side}</span>
+                        </div>
+                    </div>
+                    <div class="maker-order-field">
+                        <div class="maker-order-field-label">Token</div>
+                        <div class="maker-order-field-value">
+                            <span class="badge badge-${order.token.toLowerCase()}">${order.token}</span>
+                        </div>
+                    </div>
+                    <div class="maker-order-field">
+                        <div class="maker-order-field-label">Maker Amount</div>
+                        <div class="maker-order-field-value">${formatNumber(order.makerAmount)}</div>
+                    </div>
+                    <div class="maker-order-field">
+                        <div class="maker-order-field-label">Taker Amount</div>
+                        <div class="maker-order-field-value">${formatNumber(order.takerAmount)}</div>
+                    </div>
+                    <div class="maker-order-field">
+                        <div class="maker-order-field-label">Remaining Maker</div>
+                        <div class="maker-order-field-value">${formatNumber(order.remainingMaker)}</div>
+                    </div>
+                    <div class="maker-order-field">
+                        <div class="maker-order-field-label">Remaining Taker</div>
+                        <div class="maker-order-field-value">${formatNumber(order.remainingTaker)}</div>
+                    </div>
+                    <div class="maker-order-field">
+                        <div class="maker-order-field-label">Price</div>
+                        <div class="maker-order-field-value">${order.price}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function determineMatchType(takerOrder, makerOrder) {
+            if (takerOrder.side !== makerOrder.side) {
+                return 'COMPLEMENTARY';
+            } else if (takerOrder.side === 'BUY') {
+                return 'MINT';
+            } else {
+                return 'MERGE';
+            }
+        }
+
+        function isMatchPossible(takerOrder, makerOrder) {
+            const takerPrice = parseFloat(takerOrder.price);
+            const makerPrice = parseFloat(makerOrder.price);
+            if (takerOrder.side === makerOrder.side) {
+                const priceSum = takerPrice + makerPrice;
+                if (takerOrder.side === 'BUY') {
+                    return priceSum >= 1.00;
+                } else {
+                    return priceSum <= 1.00;
+                }
+            } else {
+                if (takerOrder.side === 'BUY') {
+                    return takerPrice >= makerPrice;
+                } else {
+                    return takerPrice <= makerPrice;
+                }
+            }
+        }
+
+        function calculateTakingAmount(makingAmount, makerAmount, takerAmount) {
+            if (makerAmount === 0) return 0;
+            return Math.floor((makingAmount * takerAmount) / makerAmount);
+        }
+
+        function calculateMakingAmountCeiling(takingAmount, makerAmount, takerAmount, maxAmount) {
+            if (takerAmount === 0) return 0;
+            const result = Math.ceil((takingAmount * makerAmount) / takerAmount);
+            return Math.min(result, maxAmount);
+        }
+
+        function calculateMatchAmounts(takerOrder, makerOrder, takerRemainingMakerAmount, matchType) {
+            const calculations = [];
+            if (matchType === 'COMPLEMENTARY') {
+                // COMPLEMENTARY: Opposite side orders match directly (BUY vs SELL)
+                // The maker provides tokens they're selling, and expects collateral in return
+                const makerMaking = makerOrder.remainingMaker;
+                calculations.push({
+                    step: '1. How much can the Maker provide?',
+                    description: 'The maker has tokens to sell. We start with their full remaining amount.',
+                    formula: 'makerMaking = makerOrder.remainingMaker',
+                    calculation: `Maker can provide: ${formatNumber(makerMaking)} tokens`
+                });
+
+                const makerTaking = calculateTakingAmount(makerMaking, makerOrder.makerAmount, makerOrder.takerAmount);
+                calculations.push({
+                    step: '2. How much collateral does the Maker need?',
+                    description: '📊 <strong>calculateTakingAmount</strong>: Given what the maker is providing, calculate how much they expect to receive based on their order\'s price ratio. We round DOWN (floor) because the maker shouldn\'t receive more than they\'re entitled to.',
+                    formula: 'makerTaking = floor((makerMaking × makerOrder.takerAmount) / makerOrder.makerAmount)',
+                    calculation: `floor((${formatNumber(makerMaking)} × ${formatNumber(makerOrder.takerAmount)}) / ${formatNumber(makerOrder.makerAmount)}) = ${formatNumber(makerTaking)} collateral`
+                });
+
+                let takerMaking, takerTaking;
+                if (takerRemainingMakerAmount < makerTaking) {
+                    // Taker doesn't have enough collateral to fully match the maker
+                    takerMaking = takerRemainingMakerAmount;
+                    calculations.push({
+                        step: '3. Who runs out first?',
+                        description: `The taker only has ${formatNumber(takerRemainingMakerAmount)} collateral, but the maker needs ${formatNumber(makerTaking)}. So the <strong>TAKER is the limiting factor</strong> - they'll use all their remaining collateral.`,
+                        formula: 'takerMaking = takerRemainingMakerAmount (all remaining)',
+                        calculation: `Taker provides: ${formatNumber(takerMaking)} collateral (everything they have)`
+                    });
+
+                    takerTaking = calculateMakingAmountCeiling(takerMaking, makerOrder.makerAmount, makerOrder.takerAmount, makerMaking);
+                    calculations.push({
+                        step: '4. How many tokens does the Taker receive?',
+                        description: '📊 <strong>calculateMakingAmountCeiling</strong>: Calculate how many tokens the taker receives for their collateral. We round UP (ceiling) to ensure the taker gets slightly more tokens (better for buyer), then cap it at what the maker can provide.',
+                        formula: 'takerTaking = min(ceil((takerMaking × makerOrder.makerAmount) / makerOrder.takerAmount), makerMaking)',
+                        calculation: `min(ceil((${formatNumber(takerMaking)} × ${formatNumber(makerOrder.makerAmount)}) / ${formatNumber(makerOrder.takerAmount)}), ${formatNumber(makerMaking)}) = ${formatNumber(takerTaking)} tokens`
+                    });
+                } else {
+                    // Maker runs out first
+                    takerMaking = makerTaking;
+                    takerTaking = makerMaking;
+                    calculations.push({
+                        step: '3. Who runs out first?',
+                        description: `The taker has ${formatNumber(takerRemainingMakerAmount)} collateral, and the maker only needs ${formatNumber(makerTaking)}. So the <strong>MAKER is the limiting factor</strong> - they'll provide all their tokens and receive the exact collateral they need.`,
+                        formula: 'Simple swap: takerMaking = makerTaking, takerTaking = makerMaking',
+                        calculation: `Taker provides: ${formatNumber(takerMaking)} collateral → receives ${formatNumber(takerTaking)} tokens`
+                    });
+                }
+                return {
+                    takerMakerAmountUsed: takerMaking,
+                    takerTakerAmountFulfilled: takerTaking,
+                    makerMakerAmountUsed: takerTaking,
+                    makerTakerAmountFulfilled: takerMaking,
+                    calculations
+                };
+            } else if (matchType === 'MINT') {
+                // MINT: Both orders are buying the same token - they pool collateral to mint new token pairs
+                const makerMaking = makerOrder.remainingMaker;
+                const makerTaking = calculateTakingAmount(makerMaking, makerOrder.makerAmount, makerOrder.takerAmount);
+                calculations.push({
+                    step: '1. How many token pairs can Maker mint?',
+                    description: '📊 <strong>calculateTakingAmount</strong>: Calculate how many YES/NO token pairs the maker can create with their collateral. Round DOWN (floor) to ensure they don\'t over-promise.',
+                    formula: 'makerTaking = floor((makerMaking × makerOrder.takerAmount) / makerOrder.makerAmount)',
+                    calculation: `Maker collateral ${formatNumber(makerMaking)} → can mint ${formatNumber(makerTaking)} pairs`
+                });
+
+                const takerTaking = calculateTakingAmount(takerRemainingMakerAmount, takerOrder.makerAmount, takerOrder.takerAmount);
+                calculations.push({
+                    step: '2. How many token pairs can Taker mint?',
+                    description: '📊 <strong>calculateTakingAmount</strong>: Calculate how many YES/NO token pairs the taker can create with their collateral. Round DOWN (floor) for the same reason.',
+                    formula: 'takerTaking = floor((takerRemainingMaker × takerOrder.takerAmount) / takerOrder.makerAmount)',
+                    calculation: `Taker collateral ${formatNumber(takerRemainingMakerAmount)} → can mint ${formatNumber(takerTaking)} pairs`
+                });
+
+                const pairsToMint = Math.min(makerTaking, takerTaking);
+                calculations.push({
+                    step: '3. How many pairs can we actually mint?',
+                    description: 'Both parties need to agree on the number of pairs. We take the <strong>smaller amount</strong> because we can only mint as many pairs as the limiting party can afford.',
+                    formula: 'pairsToMint = min(makerTaking, takerTaking)',
+                    calculation: `min(${formatNumber(makerTaking)}, ${formatNumber(takerTaking)}) = <strong>${formatNumber(pairsToMint)} token pairs</strong> will be minted`
+                });
+
+                const takerContribution = calculateMakingAmountCeiling(pairsToMint, takerOrder.makerAmount, takerOrder.takerAmount, takerRemainingMakerAmount);
+                calculations.push({
+                    step: '4. How much collateral does Taker contribute?',
+                    description: '📊 <strong>calculateMakingAmountCeiling</strong>: Based on the pairs we\'re minting, calculate how much collateral the taker needs to provide. Round UP (ceiling) to ensure sufficient collateral is contributed, then cap at their remaining amount.',
+                    formula: 'takerContribution = min(ceil((pairsToMint × takerOrder.makerAmount) / takerOrder.takerAmount), takerRemainingMaker)',
+                    calculation: `min(ceil((${formatNumber(pairsToMint)} × ${formatNumber(takerOrder.makerAmount)}) / ${formatNumber(takerOrder.takerAmount)}), ${formatNumber(takerRemainingMakerAmount)}) = ${formatNumber(takerContribution)}`
+                });
+
+                const makerContribution = calculateMakingAmountCeiling(pairsToMint, makerOrder.makerAmount, makerOrder.takerAmount, makerOrder.remainingMaker);
+                calculations.push({
+                    step: '5. How much collateral does Maker contribute?',
+                    description: '📊 <strong>calculateMakingAmountCeiling</strong>: Based on the pairs we\'re minting, calculate how much collateral the maker needs to provide. Round UP (ceiling) to ensure sufficient collateral is contributed, then cap at their remaining amount.',
+                    formula: 'makerContribution = min(ceil((pairsToMint × makerOrder.makerAmount) / makerOrder.takerAmount), makerRemainingMaker)',
+                    calculation: `min(ceil((${formatNumber(pairsToMint)} × ${formatNumber(makerOrder.makerAmount)}) / ${formatNumber(makerOrder.takerAmount)}), ${formatNumber(makerOrder.remainingMaker)}) = ${formatNumber(makerContribution)}`
+                });
+
+                return {
+                    takerMakerAmountUsed: takerContribution,
+                    takerTakerAmountFulfilled: pairsToMint,
+                    makerMakerAmountUsed: makerContribution,
+                    makerTakerAmountFulfilled: pairsToMint,
+                    calculations
+                };
+            } else {
+                // MERGE: Both orders are selling the same token - they combine YES/NO pairs to redeem collateral
+                const pairsToMerge = Math.min(takerRemainingMakerAmount, makerOrder.remainingMaker);
+                calculations.push({
+                    step: '1. How many token pairs can we merge?',
+                    description: 'Both parties have tokens to merge. We can only merge as many complete YES/NO pairs as the limiting party has. Take the <strong>smaller amount</strong>.',
+                    formula: 'pairsToMerge = min(takerRemainingMaker, makerRemainingMaker)',
+                    calculation: `min(${formatNumber(takerRemainingMakerAmount)}, ${formatNumber(makerOrder.remainingMaker)}) = <strong>${formatNumber(pairsToMerge)} token pairs</strong> will be merged`
+                });
+
+                const takerReceiving = calculateTakingAmount(pairsToMerge, takerOrder.makerAmount, takerOrder.takerAmount);
+                calculations.push({
+                    step: '2. How much collateral does Taker receive?',
+                    description: '📊 <strong>calculateTakingAmount</strong>: Based on how many pairs we\'re merging and the taker\'s price, calculate how much collateral they receive. Round DOWN (floor) because we can only distribute collateral that exists.',
+                    formula: 'takerReceiving = floor((pairsToMerge × takerOrder.takerAmount) / takerOrder.makerAmount)',
+                    calculation: `floor((${formatNumber(pairsToMerge)} × ${formatNumber(takerOrder.takerAmount)}) / ${formatNumber(takerOrder.makerAmount)}) = ${formatNumber(takerReceiving)} collateral`
+                });
+
+                const makerReceiving = calculateTakingAmount(pairsToMerge, makerOrder.makerAmount, makerOrder.takerAmount);
+                calculations.push({
+                    step: '3. How much collateral does Maker receive?',
+                    description: '📊 <strong>calculateTakingAmount</strong>: Based on how many pairs we\'re merging and the maker\'s price, calculate how much collateral they receive. Round DOWN (floor) for the same reason.',
+                    formula: 'makerReceiving = floor((pairsToMerge × makerOrder.takerAmount) / makerOrder.makerAmount)',
+                    calculation: `floor((${formatNumber(pairsToMerge)} × ${formatNumber(makerOrder.takerAmount)}) / ${formatNumber(makerOrder.makerAmount)}) = ${formatNumber(makerReceiving)} collateral`
+                });
+
+                return {
+                    takerMakerAmountUsed: pairsToMerge,
+                    takerTakerAmountFulfilled: takerReceiving,
+                    makerMakerAmountUsed: pairsToMerge,
+                    makerTakerAmountFulfilled: makerReceiving,
+                    calculations
+                };
+            }
+        }
+
+        function runMatching() {
+            if (makerOrders.length === 0) {
+                alert('Please add at least one maker order before running the matching simulation.');
+                return;
+            }
+            const takerOrder = {
+                side: document.getElementById('takerSide').value,
+                token: document.getElementById('takerToken').value,
+                makerAmount: parseInt(document.getElementById('takerMakerAmount').value),
+                takerAmount: parseInt(document.getElementById('takerTakerAmount').value),
+                remainingMaker: parseInt(document.getElementById('takerRemainingMaker').value),
+                remainingTaker: parseInt(document.getElementById('takerRemainingTaker').value),
+                price: document.getElementById('takerPrice').value
+            };
+            let takerRemainingMakerAmount = takerOrder.remainingMaker;
+            let takerRemainingTakerAmount = takerOrder.remainingTaker;
+            const matchAnalysis = makerOrders.map(order => {
+                const matchType = determineMatchType(takerOrder, order);
+                const canMatch = isMatchPossible(takerOrder, order);
+                const priceSum = parseFloat(takerOrder.price) + parseFloat(order.price);
+
+                // Store remaining amounts BEFORE this match
+                const takerRemainingBeforeMatch = {
+                    remainingMaker: takerRemainingMakerAmount,
+                    remainingTaker: takerRemainingTakerAmount
+                };
+
+                // Store maker's remaining amounts BEFORE this match
+                const makerRemainingBeforeMatch = {
+                    remainingMaker: order.remainingMaker,
+                    remainingTaker: order.remainingTaker
+                };
+
+                let matchAmounts = null;
+                let makerRemainingAfterMatch = { ...makerRemainingBeforeMatch };
+
+                if (canMatch) {
+                    matchAmounts = calculateMatchAmounts(takerOrder, order, takerRemainingMakerAmount, matchType);
+                    takerRemainingMakerAmount -= matchAmounts.takerMakerAmountUsed;
+                    takerRemainingTakerAmount -= matchAmounts.takerTakerAmountFulfilled;
+
+                    // Calculate maker's remaining amounts AFTER this match
+                    makerRemainingAfterMatch = {
+                        remainingMaker: order.remainingMaker - matchAmounts.makerMakerAmountUsed,
+                        remainingTaker: order.remainingTaker - matchAmounts.makerTakerAmountFulfilled
+                    };
+                }
+
+                // Store taker remaining amounts AFTER this match
+                const takerRemainingAfterMatch = {
+                    remainingMaker: takerRemainingMakerAmount,
+                    remainingTaker: takerRemainingTakerAmount
+                };
+
+                return {
+                    order,
+                    matchType,
+                    canMatch,
+                    priceSum,
+                    matchAmounts,
+                    takerRemainingBeforeMatch,
+                    takerRemainingAfterMatch,
+                    makerRemainingBeforeMatch,
+                    makerRemainingAfterMatch
+                };
+            });
+            showOrderSummary(takerOrder, matchAnalysis);
+        }
+
+        function showOrderSummary(takerOrder, matchAnalysis) {
+            const summary = document.getElementById('orderSummary');
+            const content = document.getElementById('summaryContent');
+            const matchAnalysisPanel = document.getElementById('matchAnalysis');
+            const matchAnalysisContent = document.getElementById('matchAnalysisContent');
+
+            content.innerHTML = `
+                <div style="margin-top: 10px;">
+                    <div style="overflow-x: auto;">
+                        <table style="width: 100%; border-collapse: collapse; font-size: 10px;">
+                            <thead>
+                                <tr style="background: #f3f4f6;">
+                                    <th rowspan="2" style="padding: 8px 6px; text-align: left; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb;">Order</th>
+                                    <th rowspan="2" style="padding: 8px 6px; text-align: center; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb;">Side</th>
+                                    <th rowspan="2" style="padding: 8px 6px; text-align: center; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb;">Token</th>
+                                    <th rowspan="2" style="padding: 8px 6px; text-align: right; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb;">Price</th>
+                                    <th rowspan="2" style="padding: 8px 6px; text-align: right; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb;">Maker Amt</th>
+                                    <th rowspan="2" style="padding: 8px 6px; text-align: right; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb;">Taker Amt</th>
+                                    <th rowspan="2" style="padding: 8px 6px; text-align: center; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb;">Match Type</th>
+                                    <th rowspan="2" style="padding: 8px 6px; text-align: center; font-weight: 600; color: #6b7280; border-bottom: 2px solid #e5e7eb;">Status</th>
+                                    <th colspan="2" style="padding: 8px 6px; text-align: center; font-weight: 600; color: #6b7280; border-bottom: 1px solid #e5e7eb;">Remaining</th>
+                                </tr>
+                                <tr style="background: #f3f4f6; border-bottom: 2px solid #e5e7eb;">
+                                    <th style="padding: 6px 4px; text-align: right; font-weight: 600; color: #6b7280; font-size: 9px;">Before</th>
+                                    <th style="padding: 6px 4px; text-align: right; font-weight: 600; color: #6b7280; font-size: 9px;">After</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Each Match Shows Taker and Maker Together -->
+                                ${matchAnalysis.map((analysis, index) => {
+                                    const order = analysis.order;
+                                    const bgColor = analysis.canMatch ? '#f0fdf4' : '#fef2f2';
+                                    const matchBadgeColor = analysis.canMatch ? '#10b981' : '#ef4444';
+                                    const matchIcon = analysis.canMatch ? '✓' : '✗';
+                                    return `
+                                    <!-- Match #${index + 1}: Taker Row -->
+                                    <tr style="background: #dbeafe; border-bottom: 1px solid #e5e7eb;">
+                                        <td style="padding: 10px 6px; font-weight: 700; color: #1e40af;">📥 Taker</td>
+                                        <td style="padding: 10px 6px; text-align: center;">
+                                            <span class="badge badge-${takerOrder.side.toLowerCase()}">${takerOrder.side}</span>
+                                        </td>
+                                        <td style="padding: 10px 6px; text-align: center;">
+                                            <span class="badge badge-${takerOrder.token.toLowerCase()}">${takerOrder.token}</span>
+                                        </td>
+                                        <td style="padding: 10px 6px; text-align: right; font-weight: 600; color: #1f2937;">${takerOrder.price}</td>
+                                        <td style="padding: 10px 6px; text-align: right; font-weight: 600; color: #1f2937;">${formatNumber(takerOrder.makerAmount)}</td>
+                                        <td style="padding: 10px 6px; text-align: right; font-weight: 600; color: #1f2937;">${formatNumber(takerOrder.takerAmount)}</td>
+                                        <td style="padding: 10px 6px; text-align: center; color: #9ca3af;" rowspan="2">
+                                            <span style="background: #8b5cf6; color: white; padding: 2px 6px; border-radius: 3px; font-size: 9px; font-weight: 600;">
+                                                ${analysis.matchType}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 10px 6px; text-align: center; color: #9ca3af;" rowspan="2">
+                                            <span style="background: ${matchBadgeColor}; color: white; padding: 2px 6px; border-radius: 3px; font-size: 9px; font-weight: 600;">
+                                                ${matchIcon} ${analysis.canMatch ? 'MATCH' : 'NO MATCH'}
+                                            </span>
+                                        </td>
+                                        <td style="padding: 10px 6px; text-align: right; font-size: 9px; color: #6b7280;">
+                                            ${formatNumber(analysis.takerRemainingBeforeMatch.remainingMaker)} / ${formatNumber(analysis.takerRemainingBeforeMatch.remainingTaker)}
+                                        </td>
+                                        <td style="padding: 10px 6px; text-align: right; font-size: 9px; ${analysis.canMatch ? 'font-weight: 600; color: #047857;' : 'color: #6b7280;'}">
+                                            ${formatNumber(analysis.takerRemainingAfterMatch.remainingMaker)} / ${formatNumber(analysis.takerRemainingAfterMatch.remainingTaker)}
+                                            ${analysis.canMatch && (analysis.takerRemainingAfterMatch.remainingMaker !== analysis.takerRemainingBeforeMatch.remainingMaker) ?
+                                                ` <span style="color: #059669;">↓</span>` : ''}
+                                        </td>
+                                    </tr>
+                                    <!-- Match #${index + 1}: Maker Row -->
+                                    <tr style="background: ${bgColor}; border-bottom: 2px solid #e5e7eb;">
+                                        <td style="padding: 10px 6px; font-weight: 700; color: ${analysis.canMatch ? '#047857' : '#991b1b'};">📤 Maker #${index + 1}</td>
+                                        <td style="padding: 10px 6px; text-align: center;">
+                                            <span class="badge badge-${order.side.toLowerCase()}">${order.side}</span>
+                                        </td>
+                                        <td style="padding: 10px 6px; text-align: center;">
+                                            <span class="badge badge-${order.token.toLowerCase()}">${order.token}</span>
+                                        </td>
+                                        <td style="padding: 10px 6px; text-align: right; font-weight: 600; color: #1f2937;">${order.price}</td>
+                                        <td style="padding: 10px 6px; text-align: right; font-weight: 600; color: #1f2937;">${formatNumber(order.makerAmount)}</td>
+                                        <td style="padding: 10px 6px; text-align: right; font-weight: 600; color: #1f2937;">${formatNumber(order.takerAmount)}</td>
+                                        <!-- Match Type and Status use rowspan from taker row -->
+                                        <td style="padding: 10px 6px; text-align: right; font-size: 9px; color: #6b7280;">
+                                            ${formatNumber(analysis.makerRemainingBeforeMatch.remainingMaker)} / ${formatNumber(analysis.makerRemainingBeforeMatch.remainingTaker)}
+                                        </td>
+                                        <td style="padding: 10px 6px; text-align: right; font-size: 9px; ${analysis.canMatch ? 'font-weight: 600; color: #d97706;' : 'color: #6b7280;'}">
+                                            ${formatNumber(analysis.makerRemainingAfterMatch.remainingMaker)} / ${formatNumber(analysis.makerRemainingAfterMatch.remainingTaker)}
+                                            ${analysis.canMatch && (analysis.makerRemainingAfterMatch.remainingMaker !== analysis.makerRemainingBeforeMatch.remainingMaker) ?
+                                                ` <span style="color: #d97706;">↓</span>` : ''}
+                                        </td>
+                                    </tr>
+                                    ${analysis.canMatch ? `
+                                    <tr style="background: ${bgColor}; border-bottom: 2px solid #e5e7eb;">
+                                        <td colspan="10" style="padding: 8px 6px;">
+                                            <div style="background: white; padding: 8px; border-radius: 4px; border-left: 3px solid ${matchBadgeColor};">
+                                                <div style="font-size: 9px; font-weight: 600; color: #6b7280; margin-bottom: 4px;">Match Logic:</div>
+                                                <div style="font-size: 9px; color: #4b5563; line-height: 1.4;">
+                                                    ${analysis.matchType === 'COMPLEMENTARY' ?
+                                                        `Different sides (Taker: ${takerOrder.side}, Maker: ${order.side}) •
+                                                        Condition: Taker price ${takerOrder.side === 'BUY' ? '≥' : '≤'} Maker price •
+                                                        Result: ${takerOrder.price} ${takerOrder.side === 'BUY' ? '≥' : '≤'} ${order.price} → ${analysis.canMatch ? '✓ Pass' : '✗ Fail'}` :
+                                                    analysis.matchType === 'MINT' ?
+                                                        `Both BUY orders (same token pair) •
+                                                        Condition: Taker price + Maker price ≥ 1.00 •
+                                                        Result: ${takerOrder.price} + ${order.price} = ${analysis.priceSum.toFixed(2)} → ${analysis.canMatch ? '✓ Pass' : '✗ Fail'}` :
+                                                        `Both SELL orders (same token pair) •
+                                                        Condition: Taker price + Maker price ≤ 1.00 •
+                                                        Result: ${takerOrder.price} + ${order.price} = ${analysis.priceSum.toFixed(2)} → ${analysis.canMatch ? '✓ Pass' : '✗ Fail'}`
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    ` : ''}
+                                    `;
+                                }).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            // Generate Match Flow Diagram
+            const matchFlowPanel = document.getElementById('matchFlow');
+            const matchFlowContent = document.getElementById('matchFlowContent');
+
+            matchFlowContent.innerHTML = `
+                <div style="margin-top: 10px; padding: 20px; background: #f9fafb; border-radius: 8px;">
+                    <!-- Taker Order Start -->
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+                        <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); min-width: 300px; text-align: center;">
+                            <div style="font-size: 12px; font-weight: 700; margin-bottom: 8px;">📥 TAKER ORDER START</div>
+                            <div style="font-size: 10px; margin-bottom: 4px;">${takerOrder.side} ${takerOrder.token} @ ${takerOrder.price}</div>
+                            <div style="font-size: 11px; font-weight: 600;">Remaining: ${formatNumber(takerOrder.remainingMaker)} / ${formatNumber(takerOrder.remainingTaker)}</div>
+                        </div>
+
+                        ${matchAnalysis.map((analysis, index) => {
+                            const order = analysis.order;
+                            const matchSuccess = analysis.canMatch;
+                            const arrowColor = matchSuccess ? '#10b981' : '#ef4444';
+                            const bgGradient = matchSuccess ?
+                                'linear-gradient(135deg, #10b981 0%, #059669 100%)' :
+                                'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+
+                            return `
+                            <!-- Arrow -->
+                            <div style="display: flex; flex-direction: column; align-items: center;">
+                                <div style="width: 3px; height: 30px; background: ${arrowColor};"></div>
+                                <div style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid ${arrowColor};"></div>
+                            </div>
+
+                            <!-- Match Box -->
+                            <div style="background: ${bgGradient}; color: white; padding: 16px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 300px;">
+                                <div style="font-size: 11px; font-weight: 700; margin-bottom: 8px; text-align: center;">
+                                    ${matchSuccess ? '✓' : '✗'} MATCH #${index + 1}: ${analysis.matchType}
+                                </div>
+                                <div style="background: rgba(255, 255, 255, 0.2); padding: 12px; border-radius: 8px; margin-bottom: 8px;">
+                                    <div style="font-size: 10px; font-weight: 600; margin-bottom: 6px;">📤 Maker #${index + 1}</div>
+                                    <div style="font-size: 9px;">${order.side} ${order.token} @ ${order.price}</div>
+                                    <div style="font-size: 9px;">Remaining: ${formatNumber(analysis.makerRemainingBeforeMatch.remainingMaker)} / ${formatNumber(analysis.makerRemainingBeforeMatch.remainingTaker)}</div>
+                                </div>
+                                ${matchSuccess ? `
+                                <div style="background: rgba(255, 255, 255, 0.2); padding: 12px; border-radius: 8px;">
+                                    <div style="font-size: 10px; font-weight: 600; margin-bottom: 6px;">💱 Exchange</div>
+                                    <div style="font-size: 9px;">Taker uses: ${formatNumber(analysis.matchAmounts.takerMakerAmountUsed)} → gets: ${formatNumber(analysis.matchAmounts.takerTakerAmountFulfilled)}</div>
+                                    <div style="font-size: 9px;">Maker uses: ${formatNumber(analysis.matchAmounts.makerMakerAmountUsed)} → gets: ${formatNumber(analysis.matchAmounts.makerTakerAmountFulfilled)}</div>
+                                </div>
+                                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255, 255, 255, 0.3);">
+                                    <div style="font-size: 10px; font-weight: 600;">📊 After Match</div>
+                                    <div style="font-size: 9px;">Taker Remaining: ${formatNumber(analysis.takerRemainingAfterMatch.remainingMaker)} / ${formatNumber(analysis.takerRemainingAfterMatch.remainingTaker)}</div>
+                                    <div style="font-size: 9px;">Maker Remaining: ${formatNumber(analysis.makerRemainingAfterMatch.remainingMaker)} / ${formatNumber(analysis.makerRemainingAfterMatch.remainingTaker)}</div>
+                                </div>
+                                ` : `
+                                <div style="background: rgba(255, 255, 255, 0.2); padding: 12px; border-radius: 8px; text-align: center;">
+                                    <div style="font-size: 10px; font-weight: 600;">❌ NO MATCH</div>
+                                    <div style="font-size: 9px; margin-top: 4px;">Price conditions not met</div>
+                                </div>
+                                `}
+                            </div>
+                            `;
+                        }).join('')}
+
+                        <!-- Arrow to Final Result -->
+                        <div style="display: flex; flex-direction: column; align-items: center;">
+                            <div style="width: 3px; height: 30px; background: #8b5cf6;"></div>
+                            <div style="width: 0; height: 0; border-left: 8px solid transparent; border-right: 8px solid transparent; border-top: 12px solid #8b5cf6;"></div>
+                        </div>
+
+                        <!-- Final Result -->
+                        <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3); min-width: 300px; text-align: center;">
+                            <div style="font-size: 12px; font-weight: 700; margin-bottom: 8px;">🎯 FINAL RESULT</div>
+                            <div style="font-size: 11px; font-weight: 600;">
+                                Taker Final Remaining: ${formatNumber(matchAnalysis[matchAnalysis.length - 1].takerRemainingAfterMatch.remainingMaker)} / ${formatNumber(matchAnalysis[matchAnalysis.length - 1].takerRemainingAfterMatch.remainingTaker)}
+                            </div>
+                            <div style="font-size: 10px; margin-top: 6px; opacity: 0.9;">
+                                Status: ${matchAnalysis[matchAnalysis.length - 1].takerRemainingAfterMatch.remainingMaker === 0 || matchAnalysis[matchAnalysis.length - 1].takerRemainingAfterMatch.remainingTaker === 0 ? '✓ FILLED' : matchAnalysis.some(a => a.canMatch) ? '⚠️ PARTIALLY FILLED' : '○ OPEN'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            matchAnalysisContent.innerHTML = `
+                <div style="margin-top: 10px;">
+                    <h3 style="color: #1f2937; margin-bottom: 16px; font-size: 14px;">Calculation Details</h3>
+                    ${matchAnalysis.map((analysis, index) => {
+                        if (!analysis.canMatch || !analysis.matchAmounts) {
+                            return '';
+                        }
+                        return `
+                        <div style="margin-bottom: 20px; padding: 16px; background: #f0fdf4; border-radius: 8px; border: 2px solid #86efac;">
+                            <div style="font-size: 13px; font-weight: 600; color: #047857; margin-bottom: 12px;">
+                                📊 Maker Order #${index + 1} - ${analysis.matchType} Match
+                            </div>
+                            ${analysis.matchAmounts ? `
+                            <div style="background: #f0fdf4; padding: 12px; border-radius: 6px; border: 1px solid #86efac;">
+                                <div style="font-size: 12px; font-weight: 600; color: #15803d; margin-bottom: 10px;">✓ Match Calculation Steps:</div>
+                                ${analysis.matchAmounts.calculations.map((calc, idx) => `
+                                    <div style="margin-bottom: 12px; padding: 10px; background: white; border-radius: 4px; border-left: 3px solid #10b981;">
+                                        <div style="font-size: 11px; font-weight: 600; color: #047857; margin-bottom: 6px;">${calc.step}</div>
+                                        <div style="font-size: 10px; color: #374151; margin-bottom: 6px; line-height: 1.5;">${calc.description}</div>
+                                        <div style="font-size: 10px; color: #6b7280; font-family: monospace; margin-bottom: 4px; background: #f9fafb; padding: 4px 6px; border-radius: 3px;">${calc.formula}</div>
+                                        <div style="font-size: 10px; color: #4b5563; line-height: 1.4;">${calc.calculation}</div>
+                                    </div>
+                                `).join('')}
+                                <div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid #86efac;">
+                                    <div style="font-size: 11px; font-weight: 600; color: #047857; margin-bottom: 8px;">Final Amounts:</div>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                        <div style="background: white; padding: 6px; border-radius: 4px;">
+                                            <div style="font-size: 9px; color: #6b7280;">Taker Used</div>
+                                            <div style="font-size: 11px; font-weight: 600; color: #1f2937;">${formatNumber(analysis.matchAmounts.takerMakerAmountUsed)}</div>
+                                        </div>
+                                        <div style="background: white; padding: 6px; border-radius: 4px;">
+                                            <div style="font-size: 9px; color: #6b7280;">Taker Got</div>
+                                            <div style="font-size: 11px; font-weight: 600; color: #1f2937;">${formatNumber(analysis.matchAmounts.takerTakerAmountFulfilled)}</div>
+                                        </div>
+                                        <div style="background: white; padding: 6px; border-radius: 4px;">
+                                            <div style="font-size: 9px; color: #6b7280;">Maker Used</div>
+                                            <div style="font-size: 11px; font-weight: 600; color: #1f2937;">${formatNumber(analysis.matchAmounts.makerMakerAmountUsed)}</div>
+                                        </div>
+                                        <div style="background: white; padding: 6px; border-radius: 4px;">
+                                            <div style="font-size: 9px; color: #6b7280;">Maker Got</div>
+                                            <div style="font-size: 11px; font-weight: 600; color: #1f2937;">${formatNumber(analysis.matchAmounts.makerTakerAmountFulfilled)}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            ` : ''}
+                        </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+
+            summary.style.display = 'block';
+            matchFlowPanel.style.display = 'block';
+            matchAnalysisPanel.style.display = 'block';
+            document.querySelector('.results-column').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    </script>
+</body>
+</html>
+
